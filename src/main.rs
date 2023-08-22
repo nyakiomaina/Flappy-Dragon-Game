@@ -10,6 +10,7 @@ struct Player {
     x:i32,
     y:i32,
     velocity:f32,
+    animation_frame: u8,
 }
 
 const SCREEN_WIDTH:i32 = 80;
@@ -72,6 +73,9 @@ impl State {
         {
             self.mode = GameMode::End;
         }
+
+        self.player.animation_frame = (self.player.animation_frame + 1) % 2;
+
     }
     fn restart(&mut self) {
         self.obstacle = Obstacle::new(SCREEN_WIDTH, 0);
@@ -129,7 +133,8 @@ impl Player {
         Player {
             x,
             y,
-            velocity: 0.0
+            velocity: 0.0,
+            animation_frame: 0,
         }
     }
 
@@ -146,7 +151,16 @@ impl Player {
 
     fn render(&mut self, ctx: &mut BTerm, player_x: i32) {
         let screen_x = self.x - player_x;
+        let dragon_representation = if self.animation_frame == 0 {
+            vec!['^', '/', '\\', 'V']
+        } else {
+            vec!['^', '-', '|', 'V']
+        };
+        for (_offset, ch) in dragon_representation.iter().enumerate() {
+            ctx.set(screen_x, self.y, YELLOW, BLACK, to_cp437(*ch));
+        }
         ctx.set(screen_x, self.y, YELLOW, BLACK, to_cp437('@')); // '@' is just a placeholder for the player.
+
     }
 
     fn flap(&mut self) {
